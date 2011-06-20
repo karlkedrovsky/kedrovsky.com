@@ -1,4 +1,4 @@
 *.dump
-htdocs/sites/default/files/*
-htdocs/sites/www.kedrovsky.com/files/*
 htdocs/backup
+htdocs/sites/*/files
+htdocs/sites/*/private
