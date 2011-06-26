@@ -1,4 +1,5 @@
 @import url(http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic);
+@import url(http://fonts.googleapis.com/css?family=Anonymous+Pro&v1);
 body {
   background: #fff;
   color: #444;
@@ -51,6 +52,7 @@ img.social, img.promo {
 input {
   background-color: #eee;
   border: 1px solid #ccc;
+  margin-right: 10px;
 }
 
 #header {
@@ -97,4 +99,17 @@ input {
 
 .social-link {
   padding-right: 5px;
+}
+
+.filter-guidelines {
+  padding: 0;
+}
+
+code {
+  font: normal 12px 'Anonymous Pro',courier,sans-serif;
+  margin: 10px 0;
+  padding: 5px;
+  display: block;
+  overflow-x: auto;
+  background-color: #f1f1f1;
 }

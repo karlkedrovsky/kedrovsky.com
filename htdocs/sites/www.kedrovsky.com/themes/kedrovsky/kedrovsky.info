@@ -4,6 +4,7 @@ core = 7.x
 engine = phptemplate
 
 regions[content] = Content
+regions[content_bottom] = Content Bottom
 regions[sidebar] = Sidebar
 regions[footer] = Footer
 
