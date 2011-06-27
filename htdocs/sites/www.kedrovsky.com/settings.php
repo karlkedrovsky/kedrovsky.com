@@ -1,5 +1,5 @@
 <?php
-
+require_once($_SERVER['DRUPAL_CONFIG'] . 'www.kedrovsky.com.php');
 /**
  * @file
  * Drupal site-specific configuration file.
@@ -177,7 +177,6 @@
  *   );
  * @endcode
  */
-require_once($_SERVER['DRUPAL_CONFIG'] . 'www.kedrovsky.com.php');
 $databases = array (
   'default' => 
   array (
@@ -224,7 +223,7 @@ $update_free_access = FALSE;
  *   $drupal_hash_salt = file_get_contents('/home/example/salt.txt');
  *
  */
-$drupal_hash_salt = 'VfFRnw06vomYb8OijvwB4LoxBtitdsq5ejZiR4wVSmU';
+$drupal_hash_salt = $hash_salt;
 
 /**
  * Base URL (optional).
