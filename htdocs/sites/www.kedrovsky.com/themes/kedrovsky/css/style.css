@@ -82,7 +82,8 @@ input {
   padding-bottom: 10px;
 }
 
-.region-content ul {
+.region-content ul,
+.region-content ol {
   padding-left: 20px;
 }
 
@@ -103,6 +104,11 @@ input {
 
 .filter-guidelines {
   padding: 0;
+}
+
+.submitted {
+  font-size: 12px;
+  font-style: italic;
 }
 
 ul.inline li {
