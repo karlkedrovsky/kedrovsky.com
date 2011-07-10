@@ -82,7 +82,8 @@ input {
   padding-bottom: 10px;
 }
 
-.region-content ul {
+.region-content ul,
+.region-content ol {
   padding-left: 20px;
 }
 
