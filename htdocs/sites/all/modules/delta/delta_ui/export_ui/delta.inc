@@ -8,28 +8,23 @@
 $plugin = array(
   'schema' => 'delta',
   'access' => 'administer delta',
-
   'menu' => array(
     'menu prefix' => 'admin/appearance',
     'menu item' => 'delta',
     'menu title' => 'Delta',
     'menu description' => 'Create additional instances of your theme settings.',
-  ),
-  
+  ),  
   'title singular' => t('template'),
   'title singular proper' => t('Template'),
   'title plural' => t('templates'),
   'title plural proper' => t('Templates'),
-
   'handler' => array(
     'class' => 'delta_export_ui',
     'parent' => 'ctools_export_ui',
-  ),
-  
+  ),  
   'form' => array(
     'settings' => 'delta_ui_form',
-  ),
-  
+  ),  
   'strings' => array(
     'confirmation' => array(
       'revert' => array(

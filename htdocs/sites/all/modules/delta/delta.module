@@ -7,15 +7,10 @@
 define('DELTA_PRESERVE', 'preserve');
 define('DELTA_OVERRIDE', 'override');
 
-global $delta;
-
 /**
  * Implements hook_menu_alter().
  */
 function delta_menu_alter(&$items) {
-  $items['admin/appearance/settings']['page arguments'] = array();
-  $items['admin/appearance/settings']['page callback'] = 'delta_theme_settings';
-  
   foreach (list_themes() as $theme) {
     $items['admin/appearance/settings/' . $theme->name]['page arguments'] = array($theme->name);
     $items['admin/appearance/settings/' . $theme->name]['page callback'] = 'delta_theme_settings';
@@ -76,11 +71,11 @@ function delta_context_plugins() {
 }
 
 /**
- * Implements hook_context_registry().
+ * Implements hook_context_regiswaittry().
  */
 function delta_context_registry() {
   return array(
-  	'reactions' => array(
+    'reactions' => array(
       'delta' => array(
         'title' => t('Delta'),
         'description' => t('Apply contextual theme settings via the Delta module.'),
@@ -105,9 +100,9 @@ function delta_context_page_reaction(){
 function delta_load($name) {
   ctools_include('export');
 
-  $template = ctools_export_crud_load('delta', $name);
-  
-  return !empty($template) ? $template : FALSE;
+  if ($template = ctools_export_crud_load('delta', $name)) {
+    return $template;
+  }
 }
 
 /**
@@ -115,15 +110,6 @@ function delta_load($name) {
  */
 function delta_load_all($reset = FALSE) {
   return ctools_export_crud_load_all('delta', $reset);
-}
-
-/**
- * @todo
- */
-function delta_valid($name, $theme) {
-  $template = delta_load($name);
-
-  return $template && $template->theme == $theme;
 }
 
 /**
@@ -138,75 +124,96 @@ function delta_enabled($name) {
 /**
  * @todo
  */
-function delta_get_plugin($template, $name, $reset = FALSE) {
-  $plugins = delta_get_plugins($template, $reset);
-  
-  return isset($plugins[$name]) ? $plugins[$name] : FALSE;
+function delta_reset($theme) {
+  if ($current = delta_get_current($theme)) {
+    foreach (delta_get_plugins($current) as $plugin) {
+      $plugin->revoke();
+    }
+
+    $pointer = &drupal_static('delta_inject');
+    $pointer[$theme] = NULL;
+
+    module_invoke_all('delta_reset', $theme, $current);
+
+    return $current;
+  }
 }
 
 /**
  * @todo
  */
-function delta_get_plugins($template, $reset = FALSE) {
-  $cache = &drupal_static(__FUNCTION__);
+function delta_get_current($theme) {
+  $pointer = drupal_static('delta_inject');
 
-  if (!isset($cache[$template->machine_name]) || $reset) {
-    ctools_include('plugins');
+  if (isset($pointer[$theme])) {
+    return $pointer[$theme];
+  }
+}
+
+/**
+ * @todos
+ */
+function delta_inject($name) {
+  if ($name && $delta = delta_load($name)) {
+    $pointer = &drupal_static(__FUNCTION__);
+    $before = delta_reset($delta->theme);
     
+    foreach (delta_get_plugins($name) as $plugin) {
+      $plugin->inject();
+    }
+
+    $pointer[$delta->theme] = $name;
+
+    module_invoke_all('delta_inject', $delta->theme, $name);
+    
+    return $before;
+  }
+}
+
+/**
+ * @todo
+ */
+function delta_get_plugin($name, $plugin) {
+  if ($plugins = delta_get_plugins($name)) {
+    if (isset($plugins[$plugin])) {
+      return $plugins[$plugin];
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * @todo
+ */
+function delta_get_plugins($name) {
+  $cache = &drupal_static(__FUNCTION__);
+  
+  if (!isset($cache[$name])) {
+    $cache[$name] = array();
+
+    ctools_include('plugins');
+
     foreach (ctools_get_plugins('delta', 'plugins') as $plugin) {
       if ($plugin['name'] != 'delta_injection') {
         if ($class = ctools_plugin_get_class($plugin, 'handler')) {
-          $cache[$template->machine_name][$plugin['name']] = new $class($plugin, $template);
+          $cache[$name][$plugin['name']] = new $class($plugin, $name);
         }
       }
     }
+
+    drupal_alter('delta_plugins', $cache[$name], $name);
   }
-  
-  return isset($cache[$template->machine_name]) ? $cache[$template->machine_name] : FALSE;
+
+  return $cache[$name];
 }
-
-/**
- * @todo
- */
-function delta_inject($template) {
-  global $delta;
   
-  if (isset($delta)) {
-    delta_revoke($delta);
-  }
-
-  foreach (delta_get_plugins($template) as $plugin) {
-    $plugin->inject();
-  }
-
-  module_invoke_all('delta_inject', $template);
- 
-  $delta = $template;
-}
-
-/**
- * @todo
- */
-function delta_revoke($template) {
-  global $delta;
-  
-  foreach (delta_get_plugins($template) as $plugin) {
-    $plugin->revoke();
-  }
-    
-  module_invoke_all('delta_revoke', $template);
-  
-  $delta = NULL;
-}
-
 /**
  * @todo
  */
 function delta_variable_set($name, $value) {
-  global $conf;
-
-  $original = isset($conf[$name]) ? $conf[$name] : NULL;
-  $conf[$name] = $value;
+  $original = isset($GLOBALS['conf'][$name]) ? $GLOBALS['conf'][$name] : NULL;
+  $GLOBALS['conf'][$name] = $value;
 
   return $original;
 }
@@ -273,18 +280,11 @@ function delta_reduce($first, $second) {
 /**
  * @todo
  */
-function delta_theme_settings($key = NULL) {
-  $backup = $GLOBALS['delta'];
+function delta_theme_settings($key) {
+  $backup = delta_reset($key);  
+  $form = drupal_get_form('system_theme_settings', $key);  
 
-  if (isset($backup)) {
-    delta_revoke($backup);
-  }
-  
-  $form = drupal_get_form('system_theme_settings', $key);
-  
-  if (isset($backup)) {
-    delta_inject($backup);
-  }
+  delta_inject($backup);
   
   return $form;
 }

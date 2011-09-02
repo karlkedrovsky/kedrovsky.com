@@ -4,13 +4,13 @@ class delta_injection_color extends delta_injection {
   /**
    * @todo
    */
-  function variables_get() {
+  function variables() {
     return array(
-      'color_' . $this->template->theme . '_files',
-      'color_' . $this->template->theme . '_logo',
-      'color_' . $this->template->theme . '_palette',
-      'color_' . $this->template->theme . '_stylesheets',
-      'color_' . $this->template->theme . '_screenshot',
+      'color_' . $this->delta->theme . '_files',
+      'color_' . $this->delta->theme . '_logo',
+      'color_' . $this->delta->theme . '_palette',
+      'color_' . $this->delta->theme . '_stylesheets',
+      'color_' . $this->delta->theme . '_screenshot',
     );
   }
   
@@ -24,10 +24,10 @@ class delta_injection_color extends delta_injection {
   /**
    * @todo
    */
-  function form_validate(&$form, &$form_state) {
+  function form_validate($form, &$form_state) {
     parent::form_validate($form, $form_state);
 
-    $files = $this->backup('color_' . $this->template->theme . '_files');
+    $files = $this->backup('color_' . $this->delta->theme . '_files');
     
     if (!empty($files) && $directory = dirname(reset($files))) {
       @rename($directory, $directory . '-delta');
@@ -37,10 +37,10 @@ class delta_injection_color extends delta_injection {
   /**
    * @todo
    */
-  function form_submit(&$form, &$form_state) {
+  function form_submit($form, &$form_state) {
     // Delete old files.
-    if (!empty($this->template->settings['color_' . $this->template->theme . '_files'])) {
-      foreach ($this->template->settings['color_' . $this->template->theme . '_files'] as $file) {
+    if (!empty($this->delta->settings['color_' . $this->delta->theme . '_files'])) {
+      foreach ($this->delta->settings['color_' . $this->delta->theme . '_files'] as $file) {
         @drupal_unlink($file);
       }
       if (isset($file) && $file = dirname($file)) {
@@ -50,7 +50,7 @@ class delta_injection_color extends delta_injection {
     
     parent::form_submit($form, $form_state);
 
-    $files = $this->backup('color_' . $this->template->theme . '_files');
+    $files = $this->backup('color_' . $this->delta->theme . '_files');
 
     if (!empty($files) && $directory = dirname(reset($files))) {
       @rename($directory . '-delta', $directory);
