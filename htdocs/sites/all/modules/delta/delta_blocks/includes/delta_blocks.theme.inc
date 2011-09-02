@@ -41,7 +41,6 @@ function theme_delta_blocks_logo($variables) {
     if ($variables['logo_linked']) {
       $options['html'] = TRUE;
       $options['attributes']['id'] = 'logo';
-      $options['attributes']['rel'] = 'home';
       $options['attributes']['title'] = t('Return to the @name home page', array('@name' => $variables['site_name']));
       
       $image = l($image, '<front>', $options);
@@ -64,7 +63,6 @@ function theme_delta_blocks_site_name($variables) {
   if ($variables['site_name_linked']) {
     $options['html'] = TRUE;
     $options['attributes']['title'] = t('Return to the @name home page', array('@name' => $variables['site_name']));
-    $options['attributes']['rel'] = 'home';
 
     $link = array(
       '#theme' => 'link',
@@ -76,7 +74,7 @@ function theme_delta_blocks_site_name($variables) {
     $site_name = render($link);
   }
   
-  $attributes['id'] = 'site-name';
+  $attributes['class'] = array('site-name');
   
   if ($variables['site_name_hidden']) {
     $attributes['class'][] = 'element-invisible';

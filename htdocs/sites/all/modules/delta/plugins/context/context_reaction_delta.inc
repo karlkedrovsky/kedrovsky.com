@@ -32,11 +32,11 @@ class context_reaction_delta extends context_reaction {
    */
   function execute() {
     foreach (context_active_contexts() as $context) {
-      if (!empty($context->reactions['delta'])) {
+      if (!empty($context->reactions['delta']['delta_template'])) {
         $template = $context->reactions['delta']['delta_template'];
         
-        if (delta_enabled($template) && delta_valid($template, $GLOBALS['theme_key'])) {
-          delta_inject(delta_load($template));      
+        if (delta_enabled($template)) {
+          delta_inject($template);      
         }
       }
     }

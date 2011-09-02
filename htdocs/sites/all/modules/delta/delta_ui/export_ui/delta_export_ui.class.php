@@ -115,10 +115,9 @@ class delta_export_ui extends ctools_export_ui {
     
     $operations = array(
       'configure' => array(
-  	    'title' => t('Configure'), 
-  	    'href' => 'admin/appearance/delta/list/' . $name . '/configure',
-      )
-    ) + $operations;
+      'title' => t('Configure'),
+      'href' => 'admin/appearance/delta/list/' . $name . '/configure',
+    )) + $operations;
     
     $this->rows[$name]['data'] = array();
     $this->rows[$name]['class'] = !empty($item->disabled) ? array('ctools-export-ui-disabled') : array('ctools-export-ui-enabled');
@@ -157,14 +156,23 @@ class delta_export_ui extends ctools_export_ui {
 
     $this->sorts[$name] = $name;
   }
+  
+  function hook_menu(&$items) {
+    if (empty($this->plugin['schema'])) {
+      return;
+    }
+    
+    parent::hook_menu($items);
+
+    $prefix = ctools_export_ui_plugin_base_path($this->plugin);
+  }
 }
 
 /**
  * @todo
  */
-function delta_ui_form(&$form, &$form_state) {  
+function delta_ui_form(&$form, &$form_state) {
   $delta = $form_state['item'];
-  $old = delta_load($delta->machine_name);
   $themes = _delta_ui_options_themes();
   
   if (isset($form_state['input']['theme'])) {
@@ -174,11 +182,13 @@ function delta_ui_form(&$form, &$form_state) {
     $theme = $delta->theme;
   }
   else {
-    $theme = reset($themes);
+    $theme = key($themes);
   }
+
+  $parents = _delta_ui_options_parents($theme, $delta->machine_name);
   
   $form['info']['#type'] = 'fieldset';
-  $form['info']['#title'] = $old ? t('Edit an existing Delta template') : t('Add a new Delta template');
+  $form['info']['#title'] = delta_load($delta->machine_name) ? t('Edit an existing Delta template') : t('Add a new Delta template');
   $form['info']['#tree'] = FALSE;
   
   $form['info']['name'] = array(
@@ -197,7 +207,7 @@ function delta_ui_form(&$form, &$form_state) {
     '#default_value' => isset($delta->machine_name) ? $delta->machine_name : '',
     '#required' => TRUE,
     '#maxlength' => 32,
-    '#access' => !$old,
+    '#access' => !delta_load($delta->machine_name),
     '#machine_name' => array(
       'source' => array('info', 'name'),
       'exists' => 'delta_load',
@@ -220,7 +230,7 @@ function delta_ui_form(&$form, &$form_state) {
     '#options' => $themes,
     '#access' => !isset($delta->machine_name),
     '#ajax' => array(
-      'callback' => '_delta_parent_options_callback',
+      'callback' => '_delta_ui_parent_options_callback',
       'wrapper' => 'parent-options-wrapper',
       'method' => 'replace',
       'effect' => 'fade',
@@ -232,11 +242,11 @@ function delta_ui_form(&$form, &$form_state) {
     '#title' => t('Parent template'),
     '#description' => t('This option allows you to build hierarchical theme settings. Delta templates that have a parent will always operate in preserve ("Only override different values") mode.'),
     '#default_value' => isset($delta->parent) ? $delta->parent : array(),
-    '#options' => array('_none' => t('- None -')) + _delta_ui_options_parents($theme, $delta->machine_name),
+    '#options' => array('_none' => t('- None -')) + $parents,
     '#prefix' => '<div id="parent-options-wrapper">',
     '#suffix' => '</div>',
-  );  
-  
+  );
+    
   $form['info']['mode'] = array(
     '#type' => 'radios',
     '#title' => t('Operation mode'),
@@ -310,7 +320,8 @@ function _delta_ui_options_themes() {
 function _delta_ui_options_parents($key, $delta) {
   $options = array();
   foreach (delta_load_all() as $item) {
-    if ($item->theme == $key && (!isset($delta) || ($item->machine_name != $delta && $item->parent != $delta))) {
+    
+    if ($item->theme == $key && (!isset($delta) || ($item->machine_name != $delta && !in_array($delta, array_keys(delta_ancestors($item->parent)))))) {
       $options[$item->machine_name] = $item->name;
     }
   }

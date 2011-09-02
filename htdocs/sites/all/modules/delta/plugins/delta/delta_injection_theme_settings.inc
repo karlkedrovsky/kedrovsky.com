@@ -4,8 +4,8 @@ class delta_injection_theme_settings extends delta_injection {
   /**
    * @todo
    */
-  function variables_get() {
-    return array('theme_' . $this->template->theme . '_settings');
+  function variables() {
+    return array('theme_' . $this->delta->theme . '_settings');
   }
 
   /**
@@ -13,7 +13,7 @@ class delta_injection_theme_settings extends delta_injection {
    */
   function inject() {
     $cache = &drupal_static('theme_get_setting');
-    $cache[$this->template->theme] = NULL;
+    $cache[$this->delta->theme] = NULL;
     
     parent::inject();
   }
@@ -23,7 +23,7 @@ class delta_injection_theme_settings extends delta_injection {
    */
   function revoke() {
     $cache = &drupal_static('theme_get_setting');
-    $cache[$this->template->theme] = NULL;
+    $cache[$this->delta->theme] = NULL;
     
     parent::revoke();
   }
