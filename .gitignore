@@ -1,4 +1,5 @@
 *.dump
+tags
 htdocs/backup
 htdocs/sites/*/files
 htdocs/sites/*/private
